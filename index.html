@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>圖解教室 · 題本</title>
+  <meta name="description" content="圖解教室：ZeroJudge 解題教學。先看圖，再寫 Python。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%232e1a4a' width='32' height='32'/%3E%3Ccircle cx='11' cy='10' r='4' fill='%23e24a2b'/%3E%3Ccircle cx='11' cy='22' r='4' fill='%233db56a'/%3E%3Crect x='20' y='8' width='6' height='18' fill='%23e0a63a'/%3E%3C/svg%3E">
+</head>
+<body>
+  <a class="skip" href="#main">跳到內容</a>
+  <header class="app-header">
+    <a class="brand" href="#home">
+      <strong>圖解教室</strong>
+      <span id="brand-sub">題本</span>
+    </a>
+    <p class="header-note" id="header-note" hidden>左右鍵翻頁　空白鍵下一步</p>
+  </header>
+
+  <main id="main">
+    <section id="view-home" class="view is-on">
+      <div class="catalog">
+        <div class="catalog-hero">
+          <h1>題本</h1>
+          <div class="finder">
+            <label class="finder-label" for="q">找題目</label>
+            <input id="q" type="search" placeholder="q181、紅綠燈、餘數、APCS…" autocomplete="off" spellcheck="false" enterkeyhint="search">
+            <p id="find-meta" class="find-meta">目錄</p>
+          </div>
+          <div class="filters" id="filters" role="toolbar" aria-label="篩選單元"></div>
+        </div>
+        <div id="method" class="method-slot" hidden></div>
+        <div id="featured" class="featured" hidden></div>
+        <div id="recent" class="recent" hidden></div>
+        <div id="catalog-list" class="toc"></div>
+        <div id="catalog-empty" class="empty" hidden></div>
+      </div>
+    </section>
+
+    <section id="view-lesson" class="view lesson">
+      <nav class="rail" id="rail" aria-label="步驟"></nav>
+      <div class="lesson-main">
+        <header class="lesson-head">
+          <div class="lesson-head-title">
+            <strong id="lesson-title">等紅綠燈</strong>
+            <span class="chip" id="step-label">1 / 11</span>
+          </div>
+          <div class="lesson-head-actions">
+            <a class="ghost" id="problem-link" href="https://zerojudge.tw/ShowProblem?problemid=q181" rel="noopener" target="_blank">原題</a>
+            <a class="ghost" href="#home">目錄</a>
+          </div>
+        </header>
+        <div class="stage-wrap">
+          <div class="stage" id="stage" aria-live="polite"></div>
+        </div>
+        <article class="teach" id="teach" aria-live="polite"></article>
+        <div class="pager">
+          <button class="ghost" type="button" id="prev">上一步</button>
+          <span class="pager-pos" id="pager-pos">1 / 11</span>
+          <button class="solid" type="button" id="next">下一步</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/pyteach.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/generic.js"></script>
+  <script src="js/q181.js"></script>
+  <script src="js/o076.js"></script>
+  <script src="js/m370.js"></script>
+  <script src="js/j605.js"></script>
+  <script src="js/ifkit.js"></script>
+  <script src="js/iflessons.js"></script>
+  <script src="js/apcslessons.js"></script>
+  <script src="js/r2026.js"></script>
+  <script src="js/r488.js"></script>
+  <script src="js/r489.js"></script>
+  <script src="js/method.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
