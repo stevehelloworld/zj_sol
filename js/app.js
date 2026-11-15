@@ -14,6 +14,7 @@
     e286: { src: "assets/e286-hero.jpg", alt: "剪紙：籃球場與兩塊計分板" },
     f312: { src: "assets/f312-hero.jpg", alt: "剪紙：兩間工廠與紙人員工" },
     g275: { src: "assets/g275-hero.jpg", alt: "剪紙：門框上的紅紙對聯" },
+    g276: { src: "assets/g276-hero.jpg", alt: "剪紙：迷宮格子上的紙魔王與黑炸彈" },
     g595: { src: "assets/g595-hero.jpg", alt: "剪紙：缺了一根的木籬笆" },
     h081: { src: "assets/h081-hero.jpg", alt: "剪紙：上漲的紙行情與金幣" },
     i399: { src: "assets/i399-hero.jpg", alt: "剪紙：三顆骰子與數字牌" },

@@ -1275,6 +1275,89 @@ a.ghost:hover {
   margin-bottom: 0.7rem;
 }
 
+.mz {
+  overflow-x: auto;
+  margin: 0.85rem 0 0.7rem;
+}
+
+.mz-row {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  margin-bottom: 0.35rem;
+}
+
+.mz-cell {
+  position: relative;
+  width: 3.35rem;
+  height: 3.55rem;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.08rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.mz-cell b {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.mz-cell small {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.mz-cell.is-bomb {
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding-bottom: 0.55rem;
+}
+
+.mz-cell.is-bomb small {
+  color: var(--accent-ink);
+}
+
+.mz-cell.is-bomb::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--accent-ink) 0 3px, transparent 3px 6px);
+}
+
+.mz-cell.is-boss {
+  box-shadow: inset 0 0 0 3px var(--primary);
+}
+
+.mz-cell.is-boom {
+  background: var(--red);
+  color: #fff;
+  padding-top: 0.55rem;
+}
+
+.mz-cell.is-boom small {
+  color: #fff;
+}
+
+.mz-cell.is-boom::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 3px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #fff 0 3px, transparent 3px 6px);
+}
+
 .ap-grow {
   display: flex;
   gap: 0.35rem;

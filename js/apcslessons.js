@@ -1570,6 +1570,320 @@ Win</pre>
     ],
   });
 
+  /* ——— g276 魔王迷宮 ——— */
+  const G276 = [
+    "n, m, k = map(int, input().split())",
+    "has = [[False] * m for _ in range(n)]",
+    "boss = []",
+    "for _ in range(k):",
+    "    r, c, s, t = map(int, input().split())",
+    "    boss.append([r, c, s, t])",
+    "alive = [True] * k",
+    "left = k",
+    "while left:",
+    "    for i in range(k):",
+    "        if alive[i]:",
+    "            has[boss[i][0]][boss[i][1]] = True",
+    "    boom = []",
+    "    for i in range(k):",
+    "        if alive[i]:",
+    "            boss[i][0] += boss[i][2]",
+    "            boss[i][1] += boss[i][3]",
+    "            r, c = boss[i][0], boss[i][1]",
+    "            if r < 0 or r >= n or c < 0 or c >= m:",
+    "                alive[i] = False",
+    "                left -= 1",
+    "            elif has[r][c]:",
+    "                alive[i] = False",
+    "                left -= 1",
+    "                boom.append((r, c))",
+    "    for r, c in boom:",
+    "        has[r][c] = False",
+    "ans = 0",
+    "for row in has:",
+    "    for cell in row:",
+    "        if cell:",
+    "            ans += 1",
+    "print(ans)",
+  ];
+  function runBoss(n, m, spec) {
+    const has = Array.from({ length: n }, () => Array(m).fill(false));
+    const boss = spec.map((b) => ({ r: b.r, c: b.c, s: b.s, t: b.t, ok: true, name: b.name }));
+    let left = boss.length;
+    let guard = 0;
+    while (left && guard < 500) {
+      guard += 1;
+      for (const b of boss) if (b.ok) has[b.r][b.c] = true;
+      const boom = [];
+      for (const b of boss) {
+        if (!b.ok) continue;
+        b.r += b.s;
+        b.c += b.t;
+        if (b.r < 0 || b.r >= n || b.c < 0 || b.c >= m) {
+          b.ok = false;
+          left -= 1;
+        } else if (has[b.r][b.c]) {
+          b.ok = false;
+          left -= 1;
+          boom.push([b.r, b.c]);
+        }
+      }
+      for (const [r, c] of boom) has[r][c] = false;
+    }
+    const bombs = [];
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < m; c++) if (has[r][c]) bombs.push([r, c]);
+    }
+    return { bombs, ans: bombs.length };
+  }
+  function mz(n, m, bombs, bosses, boom) {
+    return K().maze({ n, m, bombs, bosses, boom });
+  }
+  const G276_S1 = [
+    { name: "甲", r: 0, c: 0, s: 0, t: 0 },
+    { name: "乙", r: 0, c: 2, s: 0, t: -1 },
+    { name: "丙", r: 0, c: 4, s: 0, t: 2 },
+  ];
+  reg({
+    id: "g276",
+    title: "魔王迷宮",
+    steps: [
+      {
+        id: "story",
+        title: "先在腳下放炸彈，再跳",
+        teach: `<p>棋盤上有好幾隻魔王。每一回合，活著的魔王先在自己站的格子放一顆炸彈，然後才照自己的位移跳走。</p>
+          <p>人會消失的兩種方式：跳出去，或跳到已經有炸彈的格子。被踩到的那格，人和炸彈一起清掉。</p>
+          <p>全部魔王都消失以後，數還有幾格留著炸彈。</p>`,
+        draw(stage) {
+          open(stage, "三隻魔王", "g276", "剪紙：迷宮格子上的紙魔王與黑炸彈",
+            mz(1, 6, [], G276_S1) + `<p>字是魔王。等一下金色斜線的格子是炸彈。</p>`);
+        },
+      },
+      {
+        id: "together",
+        title: "同一回合：先全部放，再一起跳",
+        teach: `<p>不是甲放完、跳完、死了，才輪到乙。三件事的順序是：</p>
+          <ol>
+            <li>活著的魔王全部放炸彈</li>
+            <li>活著的魔王全部跳</li>
+            <li>再看誰出界、誰踩到炸彈</li>
+          </ol>
+          <p>放下去的那一刻不會爆。要等有人跳上去。</p>`,
+        draw(stage, runtime) {
+          K().walk(stage, runtime, [
+            mz(1, 6, [], G276_S1) + `<p>這一回合開始，腳下還沒有炸彈。</p>`,
+            mz(1, 6, [[0, 0], [0, 2], [0, 4]], G276_S1) + `<p>三隻同時放。人還站在上面，炸彈還不爆。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "die",
+        title: "出界人消失，炸彈留著",
+        teach: `<p>跳完才判斷。座標跑出 0 到 n−1、0 到 m−1，人消失，他剛剛放的炸彈留在原格。</p>
+          <p>跳到有炸彈的格子，人消失，而且那一格的炸彈也清掉。同一格有好幾顆，算一格，一起清。</p>`,
+        draw(stage, runtime) {
+          K().walk(stage, runtime, [
+            mz(1, 6, [[0, 0], [0, 2], [0, 4]], G276_S1) + `<p>放完，準備跳。</p>`,
+            mz(1, 6, [[0, 2], [0, 4]], [{ name: "乙", r: 0, c: 1 }]) + `<p>甲留在 0，踩到自己的炸彈，人跟炸彈一起沒了。丙跳到 6，出界，第 4 格的炸彈留著。乙跳到 1。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "zero",
+        title: "位移 (0, 0) 會踩到自己",
+        teach: `<p>位移是 (0, 0)，人放完炸彈還站在同一格，等於跳到一格已經有炸彈的地方。</p>
+          <p>範例一的甲就是這樣。第一回合他就消失，他放的那顆也清掉。</p>`,
+        draw(stage, runtime) {
+          K().walk(stage, runtime, [
+            mz(1, 1, [], [{ name: "甲", r: 0, c: 0 }]) + `<p>只有甲，位移 (0, 0)。</p>`,
+            mz(1, 1, [[0, 0]], [{ name: "甲", r: 0, c: 0 }]) + `<p>先放。</p>`,
+            mz(1, 1, [], []) + `<p>再「跳」到同一格，人和炸彈一起消失。答案 0。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "sample1",
+        title: "範例一剩下 4 格",
+        teach: `<p>輸入：</p>
+          <pre class="eq">1 6 3
+0 0 0 0
+0 2 0 -1
+0 4 0 2</pre>
+          <p>一排 6 格。甲在 0、原地。乙在 2、每次往左 1。丙在 4、每次往右 2。丙第一跳就出界。</p>`,
+        draw(stage, runtime) {
+          K().walk(stage, runtime, [
+            mz(1, 6, [], G276_S1) + `<p>開始。</p>`,
+            mz(1, 6, [[0, 2], [0, 4]], [{ name: "乙", r: 0, c: 1 }]) + `<p>第一回合結束。甲爆掉，丙出界。炸彈在 2 和 4。</p>`,
+            mz(1, 6, [[0, 1], [0, 2], [0, 4]], [{ name: "乙", r: 0, c: 0 }]) + `<p>乙在 1 放炸彈，再跳到 0。0 還沒有炸彈。</p>`,
+            mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []) + `<p>乙在 0 放炸彈，再往左跳出棋盤。四格都留著。輸出 4。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "late",
+        title: "同一格要等這一輪都判斷完才清",
+        teach: `<p>兩隻同時踩上同一顆炸彈，兩隻都死，那格也清掉。</p>
+          <p>所以被踩到的格子先記在 <code>boom</code>，等每一隻都看過，再一起清。若甲一踩就立刻清掉，乙再踩上來時炸彈已經沒了，乙會被你放生。</p>`,
+        draw(stage, runtime) {
+          const a = [{ name: "甲", r: 0, c: 1 }, { name: "乙", r: 0, c: 0 }];
+          K().walk(stage, runtime, [
+            mz(1, 3, [], a) + `<p>甲在 1、位移 0。乙在 0、每次往右 1。棋盤只有 3 格。</p>`,
+            mz(1, 3, [[0, 0], [0, 1]], a) + `<p>兩隻都放了。甲還站在自己的炸彈上。</p>`,
+            mz(1, 3, [[0, 0]], [], [[0, 1]]) + `<p>甲原地踩到，乙也跳到 1。兩隻都看到炸彈，一起消失。第 1 格清掉，第 0 格留著。答案 1。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "sample2",
+        title: "範例二從同一格出發，剩下 3",
+        teach: `<p>輸入：</p>
+          <pre class="eq">5 5 2
+0 0 3 2
+0 0 2 3</pre>
+          <p>兩隻一開始都在 (0, 0)。同時放，只會讓那一格「有炸彈」，不會因為放了兩顆就爆。</p>`,
+        draw(stage, runtime) {
+          const both = [{ name: "甲", r: 0, c: 0 }, { name: "乙", r: 0, c: 0 }];
+          const split = [{ name: "甲", r: 3, c: 2 }, { name: "乙", r: 2, c: 3 }];
+          K().walk(stage, runtime, [
+            mz(5, 5, [[0, 0]], both) + `<p>先在 (0,0) 放。人還在，不爆。</p>`,
+            mz(5, 5, [[0, 0]], split) + `<p>甲跳到 (3,2)，乙跳到 (2,3)。兩格都還沒有炸彈。</p>`,
+            mz(5, 5, [[0, 0], [3, 2], [2, 3]], split) + `<p>第二回合，兩隻在新位置放炸彈。</p>`,
+            mz(5, 5, [[0, 0], [3, 2], [2, 3]], []) + `<p>甲再跳列就超過 4，乙再跳欄就超過 4。兩隻出界。留下 3 格。</p>`,
+          ]);
+        },
+      },
+      {
+        id: "why",
+        title: "一格只要記有沒有",
+        teach: `<p>題目問的是幾格有炸彈，不是幾顆。同一格放再多次，還是 1 格。</p>
+          <p>爆的時候也不用數顆數。那一格從「有」變回「沒有」。</p>`,
+        draw(stage) {
+          const canvas = K().toolbar(stage, `<span class="chip">有或沒有</span>`);
+          canvas.innerHTML = mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []) + note("四格有炸彈。第 0 格就算被放過兩次，也只算 1。");
+        },
+      },
+      {
+        id: "pyin",
+        title: "先讀棋盤，再讀每一隻",
+        teach: `<p>第一行三個數：有幾列、有幾欄、有幾隻。後面 k 行，每行是出發的列、欄，還有每回合列和欄要加多少。</p>
+          <p><code>has</code> 先全部是 False。<code>[[False] * m for _ in range(n)]</code> 讓每一列是新的一排。不要寫成 <code>[[False] * m] * n</code>，那會變成 n 列共用同一排，改一格就全部一起改。</p>`,
+        draw(stage, runtime) {
+          const lines = G276.slice(0, 6);
+          const stdin = ["1 6 3", "0 0 0 0", "0 2 0 -1", "0 4 0 2"];
+          K().py(stage, runtime, [
+            { lines, hi: 0, stdin, stdinAt: 0, vars: { n: "", m: "", k: "" }, note: "第一行還沒吃。" },
+            { lines, hi: 1, stdin, stdinAt: 1, vars: { n: 1, m: 6, k: 3 }, glow: "k", visual: mz(1, 6, [], []), note: "1 列 6 欄，三隻還沒讀。" },
+            { lines, hi: 5, stdin, stdinAt: 4, vars: { k: 3 }, visual: mz(1, 6, [], G276_S1), note: "三行都收進 boss。每一隻是 [列, 欄, 列位移, 欄位移]。" },
+          ]);
+        },
+      },
+      {
+        id: "pyplace",
+        title: "活著的先放炸彈",
+        teach: `<p><code>left</code> 是還活著的隻數。大於 0 就再玩一回合。</p>
+          <p>這一輪先看 <code>alive[i]</code>。活著的，把現在站的格子設成 True。死掉的不要再放。</p>`,
+        draw(stage, runtime) {
+          const lines = G276.slice(6, 12);
+          K().py(stage, runtime, [
+            { lines, hi: 2, vars: { left: 3 }, note: "三隻都還在，進迴圈。" },
+            { lines, hi: 5, vars: { i: 0, alive: "[True, True, True]" }, glow: "alive", visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], G276_S1), note: "三隻都放了。人還站著。" },
+          ]);
+        },
+      },
+      {
+        id: "pymove",
+        title: "跳完再看出界或踩到",
+        teach: `<p>列加上 s，欄加上 t。先問有沒有出界，再問腳下有沒有炸彈。</p>
+          <p>出界只把人關掉，不要去碰 <code>has</code>。那一格的炸彈留著。踩到則先把座標記進 <code>boom</code>，這一輪先不清。</p>`,
+        draw(stage, runtime) {
+          const lines = [
+            "boss[i][0] += boss[i][2]",
+            "boss[i][1] += boss[i][3]",
+            "r, c = boss[i][0], boss[i][1]",
+            "if r < 0 or r >= n or c < 0 or c >= m:",
+            "    alive[i] = False",
+            "    left -= 1",
+            "elif has[r][c]:",
+            "    alive[i] = False",
+            "    left -= 1",
+            "    boom.append((r, c))",
+          ];
+          K().py(stage, runtime, [
+            { lines, hi: 3, vars: { i: 2, r: 0, c: 6, left: 2 }, note: "丙跳到第 6 欄，出界。left 減 1。第 4 格的炸彈不動。" },
+            { lines, hi: 6, vars: { i: 0, r: 0, c: 0, boom: "[(0, 0)]" }, glow: "boom", visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], [{ name: "甲", r: 0, c: 0 }]), note: "甲還在 0，格子是 True。先記進 boom，先別清。" },
+          ]);
+        },
+      },
+      {
+        id: "pyclear",
+        title: "這一輪都看完，才清 boom",
+        teach: `<p>移動的 for 結束以後，才把 <code>boom</code> 裡的格子設回 False。</p>
+          <p>這樣第二隻跳到同一格時，看到的還是有炸彈，也會一起死。</p>`,
+        draw(stage, runtime) {
+          const lines = ["for r, c in boom:", "    has[r][c] = False"];
+          K().py(stage, runtime, [
+            { lines, hi: 0, vars: { boom: "[(0, 1)]" }, visual: mz(1, 3, [[0, 0], [0, 1]], []), note: "兩隻都判斷完了。第 1 格還亮著。" },
+            { lines, hi: 1, vars: { r: 0, c: 1 }, glow: "r", visual: mz(1, 3, [[0, 0]], [], [[0, 1]]), note: "現在才清。第 0 格不是 boom，留著。" },
+          ]);
+        },
+      },
+      {
+        id: "pycount",
+        title: "人走光，再數幾格",
+        teach: `<p><code>while left</code> 停的時候，棋盤上沒有活著的魔王。把 True 的格子加一加。</p>
+          <p><code>print</code> 只印一次，印在迴圈外面。</p>`,
+        draw(stage, runtime) {
+          const lines = G276.slice(27);
+          K().py(stage, runtime, [
+            { lines, hi: 0, vars: { ans: 0, left: 0 }, visual: mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []), note: "範例一停在這四格。" },
+            { lines, hi: 5, vars: { 輸出: 4 }, glow: "輸出" },
+          ]);
+        },
+      },
+      {
+        id: "pyfull",
+        title: "把程式拼起來",
+        teach: `<p>讀棋盤和魔王，活著就重複「放、跳、清」，最後數格子。比賽從第一行開始跑。</p>`,
+        draw(stage) {
+          K().full(stage, G276);
+        },
+      },
+      {
+        id: "recap",
+        title: "交卷前再看一次",
+        teach: `<p>想清楚這件事就可以交卷：<strong>先全部放炸彈，再一起跳。出界留炸彈，踩到就等這一輪結束再清那格。</strong></p>`,
+        draw(stage) {
+          const canvas = K().toolbar(stage, `<span class="chip">一句話</span>`);
+          canvas.innerHTML = mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []) + note("範例一剩下 4 格。");
+        },
+      },
+      {
+        id: "play",
+        title: "自己改一排迷宮",
+        teach: `<p>這裡是直的一排、6 格，對應題目一半的配分。欄是出發位置，跳是每回合往右幾格，往左就填負的。跳填 0，表示原地，會踩到自己剛放的炸彈。</p>
+          <p>想清楚這件事就可以交卷：<strong>先全部放，再一起跳。出界留炸彈，踩到就等這一輪結束再清。</strong></p>`,
+        draw(stage) {
+          K().live(stage, `<span class="chip">試一排</span>`, { c1: 0, t1: 0, c2: 2, t2: -1, c3: 4, t3: 2 }, (s) => {
+            const names = ["甲", "乙", "丙"];
+            const spec = [1, 2, 3].map((i) => ({
+              name: names[i - 1],
+              r: 0,
+              c: Math.max(0, Math.min(5, s["c" + i] | 0)),
+              s: 0,
+              t: s["t" + i] | 0,
+            }));
+            const { bombs, ans } = runBoss(1, 6, spec);
+            const fields = [1, 2, 3].map((i) =>
+              K().numField("c" + i, names[i - 1] + "欄", s["c" + i]) +
+              K().numField("t" + i, names[i - 1] + "跳", s["t" + i])
+            ).join("");
+            return K().fieldRow(fields) + mz(1, 6, bombs, []) + `<p>還有 <b>${ans}</b> 格有炸彈</p>`;
+          });
+        },
+      },
+    ],
+  });
+
   /* ——— g595 修補圍籬 ——— */
   const fence = [2, 0, 3, 0, 4];
   function fenceFill(h) {

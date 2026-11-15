@@ -385,6 +385,49 @@
     </div>`;
   }
 
+  function maze(state) {
+    const n = state.n;
+    const m = state.m;
+    const bombs = new Set((state.bombs || []).map(([r, c]) => r + "," + c));
+    const boom = new Set((state.boom || []).map(([r, c]) => r + "," + c));
+    const at = {};
+    (state.bosses || []).forEach((b) => {
+      if (b.r < 0 || b.c < 0 || b.r >= n || b.c >= m) return;
+      const key = b.r + "," + b.c;
+      (at[key] = at[key] || []).push(b.name);
+    });
+    const bits = [];
+    let rows = "";
+    for (let r = 0; r < n; r++) {
+      let cells = "";
+      for (let c = 0; c < m; c++) {
+        const key = r + "," + c;
+        const names = at[key] || [];
+        const hasB = bombs.has(key);
+        const isBoom = boom.has(key);
+        const cls = ["mz-cell"];
+        if (hasB) cls.push("is-bomb");
+        if (isBoom) cls.push("is-boom");
+        if (names.length) cls.push("is-boss");
+        let main = "";
+        let sub = n > 1 ? r + "," + c : String(c);
+        if (isBoom) main = "爆";
+        else if (names.length) {
+          main = names.join("");
+          if (hasB) sub = "彈";
+        } else if (hasB) main = "彈";
+        const where = n > 1 ? "第 " + r + " 列第 " + c + " 欄" : "第 " + c + " 格";
+        if (names.length) bits.push(where + " 魔王" + names.join("、"));
+        if (hasB) bits.push(where + " 有炸彈");
+        if (isBoom) bits.push(where + " 爆炸");
+        cells += `<div class="${cls.join(" ")}"><b>${esc(main)}</b><small>${esc(sub)}</small></div>`;
+      }
+      rows += `<div class="mz-row">${cells}</div>`;
+    }
+    const label = state.label || (bits.length ? bits.join("，") : "空棋盤");
+    return `<div class="mz" role="img" aria-label="${esc(label)}">${rows}</div>`;
+  }
+
   function freq(cnt, mx) {
     const cells = [];
     for (let i = 1; i <= 9; i++) {
@@ -398,6 +441,6 @@
     toolbar, hero, fork, tri, gates, fortune, week, clock, sgnLine, bars,
     scale, avgTrack, rps, flip, py, full, fieldRow, numField, live, walk, esc,
     digits, scores, triangle, grid, logic, board, posts, price, couplet, boxes, plants, path, chars,
-    dice, compass, freq,
+    dice, compass, freq, maze,
   };
 })();
