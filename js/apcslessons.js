@@ -1573,38 +1573,41 @@ Win</pre>
   /* ——— g276 魔王迷宮 ——— */
   const G276 = [
     "n, m, k = map(int, input().split())",
-    "has = [[False] * m for _ in range(n)]",
-    "boss = []",
-    "for _ in range(k):",
-    "    r, c, s, t = map(int, input().split())",
-    "    boss.append([r, c, s, t])",
+    "r = []",
+    "c = []",
+    "s = []",
+    "t = []",
     "alive = [True] * k",
-    "left = k",
-    "while left:",
+    "for i in range(k):",
+    "    ri, ci, si, ti = map(int, input().split())",
+    "    r.append(ri)",
+    "    c.append(ci)",
+    "    s.append(si)",
+    "    t.append(ti)",
+    "mapp = []",
+    "for i in range(n):",
+    "    mapp.append([0] * m)",
+    "while any(alive):",
+    "    # 1. 放炸彈",
     "    for i in range(k):",
     "        if alive[i]:",
-    "            has[boss[i][0]][boss[i][1]] = True",
-    "    boom = []",
+    "            mapp[r[i]][c[i]] = 1",
+    "    # 2. 移動",
     "    for i in range(k):",
     "        if alive[i]:",
-    "            boss[i][0] += boss[i][2]",
-    "            boss[i][1] += boss[i][3]",
-    "            r, c = boss[i][0], boss[i][1]",
-    "            if r < 0 or r >= n or c < 0 or c >= m:",
+    "            r[i] += s[i]",
+    "            c[i] += t[i]",
+    "            if r[i] < 0 or r[i] >= n or c[i] < 0 or c[i] >= m:",
     "                alive[i] = False",
-    "                left -= 1",
-    "            elif has[r][c]:",
-    "                alive[i] = False",
-    "                left -= 1",
-    "                boom.append((r, c))",
-    "    for r, c in boom:",
-    "        has[r][c] = False",
-    "ans = 0",
-    "for row in has:",
-    "    for cell in row:",
-    "        if cell:",
-    "            ans += 1",
-    "print(ans)",
+    "    # 3. 踩到炸彈才爆",
+    "    explode = []",
+    "    for i in range(k):",
+    "        if alive[i] and 0 <= r[i] < n and 0 <= c[i] < m and mapp[r[i]][c[i]] > 0:",
+    "            alive[i] = False",
+    "            explode.append([r[i], c[i]])",
+    "    for e in explode:",
+    "        mapp[e[0]][e[1]] = 0",
+    "print(sum(map(sum, mapp)))",
   ];
   function runBoss(n, m, spec) {
     const has = Array.from({ length: n }, () => Array(m).fill(false));
@@ -1723,7 +1726,7 @@ Win</pre>
         id: "late",
         title: "同一格要等這一輪都判斷完才清",
         teach: `<p>兩隻同時踩上同一顆炸彈，兩隻都死，那格也清掉。</p>
-          <p>所以被踩到的格子先記在 <code>boom</code>，等每一隻都看過，再一起清。若甲一踩就立刻清掉，乙再踩上來時炸彈已經沒了，乙會被你放生。</p>`,
+          <p>所以被踩到的格子先記在 <code>explode</code>，等每一隻都看過，再一起清成 0。若甲一踩就立刻清掉，乙再踩上來時炸彈已經沒了，乙會被你放生。</p>`,
         draw(stage, runtime) {
           const a = [{ name: "甲", r: 0, c: 1 }, { name: "乙", r: 0, c: 0 }];
           K().walk(stage, runtime, [
@@ -1764,79 +1767,68 @@ Win</pre>
       },
       {
         id: "pyin",
-        title: "先讀棋盤，再讀每一隻",
-        teach: `<p>第一行三個數：有幾列、有幾欄、有幾隻。後面 k 行，每行是出發的列、欄，還有每回合列和欄要加多少。</p>
-          <p><code>has</code> 先全部是 False。<code>[[False] * m for _ in range(n)]</code> 讓每一列是新的一排。不要寫成 <code>[[False] * m] * n</code>，那會變成 n 列共用同一排，改一格就全部一起改。</p>`,
+        title: "四條清單，一張表",
+        teach: `<p>列、欄、上下跳、左右跳，各一條清單。第 i 隻的資料就是 <code>r[i]</code>、<code>c[i]</code>、<code>s[i]</code>、<code>t[i]</code>。<code>alive[i]</code> 先全部是 True。</p>
+          <p><code>mapp</code> 用 0 和 1。0 沒炸彈，1 有。一列一列 <code>append</code>，不要寫成 <code>[[0] * m] * n</code>，那會變成 n 列共用同一排。</p>`,
         draw(stage, runtime) {
-          const lines = G276.slice(0, 6);
+          const lines = G276.slice(0, 15);
           const stdin = ["1 6 3", "0 0 0 0", "0 2 0 -1", "0 4 0 2"];
           K().py(stage, runtime, [
             { lines, hi: 0, stdin, stdinAt: 0, vars: { n: "", m: "", k: "" }, note: "第一行還沒吃。" },
-            { lines, hi: 1, stdin, stdinAt: 1, vars: { n: 1, m: 6, k: 3 }, glow: "k", visual: mz(1, 6, [], []), note: "1 列 6 欄，三隻還沒讀。" },
-            { lines, hi: 5, stdin, stdinAt: 4, vars: { k: 3 }, visual: mz(1, 6, [], G276_S1), note: "三行都收進 boss。每一隻是 [列, 欄, 列位移, 欄位移]。" },
+            { lines, hi: 5, stdin, stdinAt: 1, vars: { n: 1, m: 6, k: 3, alive: "[True, True, True]" }, glow: "alive", note: "三隻都先當活著。" },
+            { lines, hi: 11, stdin, stdinAt: 4, vars: { r: "[0, 0, 0]", c: "[0, 2, 4]", s: "[0, 0, 0]", t: "[0, -1, 2]" }, visual: mz(1, 6, [], G276_S1), note: "三行分別推進四條清單。同一隻用同一個 i。" },
+            { lines, hi: 14, vars: { mapp: "1 列 6 欄的 0" }, visual: mz(1, 6, [], []), note: "表先全部是 0。" },
           ]);
         },
       },
       {
         id: "pyplace",
-        title: "活著的先放炸彈",
-        teach: `<p><code>left</code> 是還活著的隻數。大於 0 就再玩一回合。</p>
-          <p>這一輪先看 <code>alive[i]</code>。活著的，把現在站的格子設成 True。死掉的不要再放。</p>`,
+        title: "第 1 步：活著的放炸彈",
+        teach: `<p><code>while any(alive)</code>：還有任何一隻活著，就再玩一輪。</p>
+          <p>這一輪先只做放。活著的，把腳下設成 1。死掉的不要再放。</p>`,
         draw(stage, runtime) {
-          const lines = G276.slice(6, 12);
+          const lines = G276.slice(15, 20);
           K().py(stage, runtime, [
-            { lines, hi: 2, vars: { left: 3 }, note: "三隻都還在，進迴圈。" },
-            { lines, hi: 5, vars: { i: 0, alive: "[True, True, True]" }, glow: "alive", visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], G276_S1), note: "三隻都放了。人還站著。" },
+            { lines, hi: 0, vars: { alive: "[True, True, True]" }, note: "三隻都還在，進迴圈。" },
+            { lines, hi: 4, vars: { i: 2 }, visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], G276_S1), note: "三隻都放成 1。人還站著，這一步不爆。" },
           ]);
         },
       },
       {
         id: "pymove",
-        title: "跳完再看出界或踩到",
-        teach: `<p>列加上 s，欄加上 t。先問有沒有出界，再問腳下有沒有炸彈。</p>
-          <p>出界只把人關掉，不要去碰 <code>has</code>。那一格的炸彈留著。踩到則先把座標記進 <code>boom</code>，這一輪先不清。</p>`,
+        title: "第 2 步：跳，出界就關掉",
+        teach: `<p>列加上 <code>s[i]</code>，欄加上 <code>t[i]</code>。這一輪只處理出界，先不要看炸彈。</p>
+          <p>出界只把 <code>alive[i]</code> 改成 False。他剛剛放的 1 留在原格。</p>`,
         draw(stage, runtime) {
-          const lines = [
-            "boss[i][0] += boss[i][2]",
-            "boss[i][1] += boss[i][3]",
-            "r, c = boss[i][0], boss[i][1]",
-            "if r < 0 or r >= n or c < 0 or c >= m:",
-            "    alive[i] = False",
-            "    left -= 1",
-            "elif has[r][c]:",
-            "    alive[i] = False",
-            "    left -= 1",
-            "    boom.append((r, c))",
-          ];
+          const lines = G276.slice(20, 27);
           K().py(stage, runtime, [
-            { lines, hi: 3, vars: { i: 2, r: 0, c: 6, left: 2 }, note: "丙跳到第 6 欄，出界。left 減 1。第 4 格的炸彈不動。" },
-            { lines, hi: 6, vars: { i: 0, r: 0, c: 0, boom: "[(0, 0)]" }, glow: "boom", visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], [{ name: "甲", r: 0, c: 0 }]), note: "甲還在 0，格子是 True。先記進 boom，先別清。" },
+            { lines, hi: 4, vars: { i: 0, "r[0]": 0, "c[0]": 0 }, visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], [{ name: "甲", r: 0, c: 0 }]), note: "甲位移是 0，還在棋盤裡。這一步先不判炸彈。" },
+            { lines, hi: 6, vars: { i: 2, "c[2]": 6, "alive[2]": false }, glow: "alive[2]", note: "丙跳到第 6 欄，出界，關掉。第 4 格的 1 不動。" },
           ]);
         },
       },
       {
         id: "pyclear",
-        title: "這一輪都看完，才清 boom",
-        teach: `<p>移動的 for 結束以後，才把 <code>boom</code> 裡的格子設回 False。</p>
-          <p>這樣第二隻跳到同一格時，看到的還是有炸彈，也會一起死。</p>`,
+        title: "第 3 步：還活著、腳下是 1，才爆",
+        teach: `<p>出界的已經關掉了。還活著、而且腳下是 1 的，人死，座標先記進 <code>explode</code>。</p>
+          <p>這個 for 走完，才把那些格清成 0。第二隻踩同一格時，看到的還是 1。</p>`,
         draw(stage, runtime) {
-          const lines = ["for r, c in boom:", "    has[r][c] = False"];
+          const lines = G276.slice(27, 35);
           K().py(stage, runtime, [
-            { lines, hi: 0, vars: { boom: "[(0, 1)]" }, visual: mz(1, 3, [[0, 0], [0, 1]], []), note: "兩隻都判斷完了。第 1 格還亮著。" },
-            { lines, hi: 1, vars: { r: 0, c: 1 }, glow: "r", visual: mz(1, 3, [[0, 0]], [], [[0, 1]]), note: "現在才清。第 0 格不是 boom，留著。" },
+            { lines, hi: 3, vars: { i: 0, explode: "[[0, 0]]" }, visual: mz(1, 6, [[0, 0], [0, 2], [0, 4]], [{ name: "甲", r: 0, c: 0 }]), note: "甲還活著，腳下是 1。先記，先不清。" },
+            { lines, hi: 7, vars: { e: "[0, 1]" }, visual: mz(1, 3, [[0, 0]], [], [[0, 1]]), note: "全部看完才清。沒被踩到的 1 留著。" },
           ]);
         },
       },
       {
         id: "pycount",
-        title: "人走光，再數幾格",
-        teach: `<p><code>while left</code> 停的時候，棋盤上沒有活著的魔王。把 True 的格子加一加。</p>
-          <p><code>print</code> 只印一次，印在迴圈外面。</p>`,
+        title: "人走光，表裡的 1 加一加",
+        teach: `<p><code>while</code> 停的時候，<code>alive</code> 裡沒有 True。<code>mapp</code> 只剩 0 和 1。</p>
+          <p><code>sum(map(sum, mapp))</code> 是每一列先加，再把各列加起來。1 的個數就是還有炸彈的格數。只印一次。</p>`,
         draw(stage, runtime) {
-          const lines = G276.slice(27);
+          const lines = [G276[35]];
           K().py(stage, runtime, [
-            { lines, hi: 0, vars: { ans: 0, left: 0 }, visual: mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []), note: "範例一停在這四格。" },
-            { lines, hi: 5, vars: { 輸出: 4 }, glow: "輸出" },
+            { lines, hi: 0, vars: { 輸出: 4 }, glow: "輸出", visual: mz(1, 6, [[0, 0], [0, 1], [0, 2], [0, 4]], []), note: "範例一四個 1，印 4。" },
           ]);
         },
       },
